@@ -25,6 +25,9 @@ import android.widget.Toast
 import kotlin.collections.orEmpty
 import kotlin.collections.toTypedArray
 import android.view.View
+import android.text.SpannableStringBuilder
+import android.text.style.BackgroundColorSpan
+import android.graphics.Color
 
 class MainActivity : AppCompatActivity() {
 
@@ -159,9 +162,26 @@ class MainActivity : AppCompatActivity() {
             var newCode = generateCode()
             if (!IHUBinarySwitch.isChecked)
             {
-                newCode = reverseIHUCode(IHUbinaryCode.toString())
+                val input = reverseIHUCode(IHUbinaryCode.toString())
+                val build = SpannableStringBuilder(input)
+                val original = IHUsourceCode.toString()
+                minOf(original.length, input.length).let { length ->
+                    for (i in 0 until length) {
+                        if (original[i] != input[i]) {
+                            // Подсвечиваем отличающийся символ другим цветом фона
+                            build.setSpan(
+                                BackgroundColorSpan(Color.RED),
+                                i,
+                                i + 1,
+                                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        }
+                    }
+                }
+                resultIHUCode.setText(build)
+            } else {
+                resultIHUCode.setText(newCode)
             }
-            resultIHUCode.setText(newCode)
         }
 
         // Настройки инсетов экрана
@@ -207,7 +227,24 @@ class MainActivity : AppCompatActivity() {
         FuncTableSpinner.adapter = tables_adapter
     }
 
+    private fun update_binary_code(spinner: Spinner) {
+        if (IHUbinaryCode == null) {
+            return
+        }
+        val name = spinner.tag.toString().replace("IHU_spinner_", "")
+        val matchingSetting = IHUSettingsList.find { it.name == name }
+        if (matchingSetting != null) {
+            val bits = matchingSetting.states.get(spinner.selectedItem.toString())
+            for (bit in bits?.entries.orEmpty()) {
+                IHUbinaryCode = replaceCharAtIndex(IHUbinaryCode.toString(), bit.key, bit.value.toString())
+            }
+        }
+    }
+
     private fun generateCode(): String {
+        if (IHUbinaryCode == null) {
+            return ("")
+        }
         for (spinner in IHUSpinnerList) {
             val name = spinner.tag.toString().replace("IHU_spinner_", "")
             val matchingSetting = IHUSettingsList.find { it.name == name }
@@ -576,6 +613,14 @@ class MainActivity : AppCompatActivity() {
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 1f, // weight = 1f
             )
+
+            // Задаём функцию выполняющуюся при выборе настройки
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                    update_binary_code(spinner)
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
 
             IHUSpinnerList.add(spinner)
 
