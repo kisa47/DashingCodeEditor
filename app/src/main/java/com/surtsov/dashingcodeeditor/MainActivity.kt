@@ -50,6 +50,12 @@ class MainActivity : AppCompatActivity() {
 
     private var maxCount: Int = 0
 
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//        outState.putString("IHUsourceCode", IHUsourceCode)
+//    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -190,10 +196,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-
-
-
     }
 
     private fun setBlockType(position: Int) {
@@ -228,21 +230,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun update_binary_code(spinner: Spinner) {
-        if (IHUbinaryCode == null) {
+        if ( IHUbinaryCode == null || IHUsourceCode == null || IHUbinaryCode == "") {
             return
         }
-        val name = spinner.tag.toString().replace("IHU_spinner_", "")
-        val matchingSetting = IHUSettingsList.find { it.name == name }
-        if (matchingSetting != null) {
-            val bits = matchingSetting.states.get(spinner.selectedItem.toString())
-            for (bit in bits?.entries.orEmpty()) {
-                IHUbinaryCode = replaceCharAtIndex(IHUbinaryCode.toString(), bit.key, bit.value.toString())
+
+        try {
+            val name = spinner.tag.toString().replace("IHU_spinner_", "")
+            val matchingSetting = IHUSettingsList.find { it.name == name }
+            if (matchingSetting != null) {
+                val bits = matchingSetting.states.get(spinner.selectedItem.toString())
+                for (bit in bits?.entries.orEmpty()) {
+                    IHUbinaryCode =
+                        replaceCharAtIndex(IHUbinaryCode.toString(), bit.key, bit.value.toString())
+                }
             }
+        } catch (e: Exception) {
+            Log.e("MyApp", "Ошибка обработки данных: ${e.message}", e)
         }
     }
 
     private fun generateCode(): String {
-        if (IHUbinaryCode == null) {
+        if ( IHUbinaryCode == null || IHUsourceCode == null || IHUbinaryCode == "") {
             return ("")
         }
         for (spinner in IHUSpinnerList) {
