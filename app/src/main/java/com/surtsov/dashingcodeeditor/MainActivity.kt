@@ -18,54 +18,97 @@ import android.widget.ArrayAdapter
 import kotlin.text.lowercase
 import android.util.Log
 import android.widget.ImageButton
-import android.content.Context.CLIPBOARD_SERVICE
 import android.content.ClipboardManager
 import android.widget.AdapterView
 import android.widget.Switch
 import android.widget.Toast
 import kotlin.collections.orEmpty
 import kotlin.collections.toTypedArray
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
     private var needSpaces: Boolean = false
     private var needUpper: Boolean = false
     private var IHUbinaryCode: String? = null
+
+    private var sourceIHUbinaryCode: String? = null
     private var IHUsourceCode: String? = null
     private var IHUSettingsList: List<IHUSettings> = emptyList()
     private var IHUDefaultCodes: List<IHUCodes> = emptyList()
     private var IHUSpinnerList =  mutableListOf<Spinner>()
+    private var BlockTypesList: List<BlockTypes> = emptyList()
+
+    private var SettingsFileLists: List<TypeSettings> = emptyList()
+
+    private var SettingsList: List<IHUCodesList> = emptyList()
+
+    private var selectedBlockType: String = ""
+
+    private var maxCount: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main) // Убедитесь, что установлен правильный макет
 
+        val BlockTypesLoad = BlockTypesLoad(resources.assets)
+        BlockTypesList = BlockTypesLoad.loadSettings()
+
+        // загружаем список файлов
+        val TypeSettingsManger = TypeSettingsManger(resources.assets)
+        SettingsFileLists = TypeSettingsManger.loadSettings()
+
+        // загружаем список настроек
+        val LinearLayoutFunctionsIHU = findViewById<LinearLayout>(R.id.LinearLayoutFunctionsIHU)
+        SettingsList = loadSettings(BlockTypesList, SettingsFileLists)
+
+        val FuncTableSpinner = findViewById<Spinner>(R.id.FuncTableSpinner)
+        FuncTableSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                addIHUFunctions(SettingsList.filter { it.block_type == selectedBlockType }[position].table)
+                reloadTableValue()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // панель выбора типа блока
+        val blockTypesSpiner = findViewById<Spinner>(R.id.blockTypesSpiner)
+        val types = BlockTypesList.map { it.name }
+        val types_adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, types)
+
+        types_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        blockTypesSpiner.adapter = types_adapter
+
+        blockTypesSpiner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                setBlockType(position)
+
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+
         // получение объектов фронта
         val resultIHUCode = findViewById<EditText>(R.id.resultIHUCode)
         val IHUBinarySwitch = findViewById<Switch>(R.id.IHUBinarySwitch)
 
-        val IHULoadingButton = findViewById<Button>(R.id.IHULoadingButton)
-        val LinearLayoutFunctionsIHU = findViewById<LinearLayout>(R.id.LinearLayoutFunctionsIHU)
         val settingsManagerIHU = IHUSettingsManager(resources.assets)
 
-        // панель выбора дефолтной кодировки
-        val defaultCodesIHU = IHULoadCodes(resources.assets)
-        IHUDefaultCodes = defaultCodesIHU.loadSettings()
+
+
+        // панель выбора кодировки
         val IHUDEfaultCodesSpiner = findViewById<Spinner>(R.id.IHUDEfaultCodesSpiner)
-        val configurations = IHUDefaultCodes.map { it.name }
-        val configurations_adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, configurations)
+        IHUDEfaultCodesSpiner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                applyDefaultCode()
+            }
 
-        configurations_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        IHUDEfaultCodesSpiner.adapter = configurations_adapter
-        applyDefaultCode()
-
-        // кнопка применить выбранную конфигурацию
-        val ApplyDefaultButton = findViewById<Button>(R.id.ApplyDefaultButton)
-
-        ApplyDefaultButton.setOnClickListener {
-            applyDefaultCode()
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
 
         // кнопка скопировать измененный код в буфер обмена
         val IHUCopyButton = findViewById<Button>(R.id.IHUCopyButton)
@@ -77,11 +120,6 @@ class MainActivity : AppCompatActivity() {
             // Сообщаем пользователю, что текст скопирован
             Toast.makeText(this, "Текст скопирован в буфер обмена", Toast.LENGTH_SHORT).show()
         }
-
-        // загрузка настроек из ihu_settings.json
-        IHUSettingsList = settingsManagerIHU.loadSettings()
-
-        addIHUFunctions(LinearLayoutFunctionsIHU, IHUSettingsList)
 
 
         // Устанавливаем обработчик изменений текста
@@ -108,9 +146,11 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Поле очищено", Toast.LENGTH_SHORT).show()
         }
 
+        // отменить изменения
+        val IHULoadingButton = findViewById<Button>(R.id.IHULoadingButton)
         IHULoadingButton.setOnClickListener {
             IHUbinaryCode = loadBinary(IHUsourceCode.toString())
-            setSettingsIHU()
+            reloadTableValue()
         }
 
         // кнопка генерации кода
@@ -132,6 +172,39 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+
+    }
+
+    private fun setBlockType(position: Int) {
+        val blockType =  BlockTypesList[position]
+        Log.d("SPINNER", "Выбран элемент position: ${position} name: ${blockType}")
+        setAvailableCodes(blockType.name)
+        setAvailableFunctionTables(blockType.name)
+        maxCount = blockType.code_length
+        selectedBlockType = blockType.name
+    }
+
+    private fun setAvailableCodes(blockType: String) {
+        // панель выбора дефолтной кодировки
+        val defaultCodesIHU = IHULoadCodes(resources.assets)
+        IHUDefaultCodes = defaultCodesIHU.loadSettings()
+        val IHUDEfaultCodesSpiner = findViewById<Spinner>(R.id.IHUDEfaultCodesSpiner)
+        val configurations = IHUDefaultCodes.filter { it.block_type == "default" || it.block_type == blockType }.map { it.name }
+        val configurations_adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, configurations)
+
+        configurations_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        IHUDEfaultCodesSpiner.adapter = configurations_adapter
+        applyDefaultCode()
+    }
+
+    private fun setAvailableFunctionTables(blockType: String) {
+        val FuncTableSpinner = findViewById<Spinner>(R.id.FuncTableSpinner)
+        val tables = SettingsList.filter { it.block_type == blockType }.map{ it.name }
+
+        val tables_adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, tables)
+        tables_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        FuncTableSpinner.adapter = tables_adapter
     }
 
     private fun generateCode(): String {
@@ -257,7 +330,7 @@ class MainActivity : AppCompatActivity() {
             val inputSourceIHUCode = findViewById<EditText>(R.id.inputSourceIHUCode)
             var enabledButtons = false
 
-            if (it.toString().replace(" ", "").length != 64) {
+            if (it.toString().replace(" ", "").length != maxCount) {
                 inputSourceIHUCode.error =
                     "Длина IHU-кода должна быть ровно 64 символа (пробелы игнорируются)"
             }
@@ -276,6 +349,7 @@ class MainActivity : AppCompatActivity() {
                 setSettingsIHU()
                 inputSourceIHUCode.error = null
                 enabledButtons = true
+                sourceIHUbinaryCode = loadBinary(IHUsourceCode.toString())
             }
 
             disableButtons(enabledButtons)
@@ -340,10 +414,25 @@ class MainActivity : AppCompatActivity() {
         return rearrangedHex
     }
 
+    // класс типов блоков
+    data class BlockTypes(
+        val name: String,
+        val code_length: Int,
+    )
+
+    // загрузка типов блоков
+    class BlockTypesLoad(private val assetManager: AssetManager) {
+        fun loadSettings(): List<BlockTypes> {
+            val settingsJson = assetManager.open("block_types.json").bufferedReader().use { it.readText() }
+            return Gson().fromJson(settingsJson, Array<BlockTypes>::class.java).toList()
+        }
+    }
+
     // класс кодировок
     data class IHUCodes(
         val name: String,
-        val code: String
+        val code: String,
+        val block_type: String,
     )
 
     // загрузка кодировок из файла ihu_default_codes.json
@@ -355,25 +444,104 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // класс списка кодировок для поиска
+    data class IHUCodesList(
+        val name: String,
+        val table: List<IHUSettings>,
+        val block_type: String
+    )
+
+    // класс списка значений кодировок
+    data class TypeSettings(
+        val name: String,
+        val block_type: String,
+        val file_name: String
+    )
+    // загрузка кодировок из файла type_settings.json
+    class TypeSettingsManger(private val assetManager: AssetManager) {
+        fun loadSettings(): List<TypeSettings> {
+            val settingsJson = assetManager.open("type_settings.json").bufferedReader().use { it.readText() }
+            return Gson().fromJson(settingsJson, Array<TypeSettings>::class.java).toList()
+        }
+    }
+
     // класс значений кодировки
     data class IHUSettings(
         val name: String,
         val description: String,
-        val type: String,
         val states: Map<String, Map<Int, Int>>
     )
 
     // загрузка кодировок из файла ihu_settings.json
     // ToDo объединитб загрузку всех классов из файлов в отдельную функцию
     class IHUSettingsManager(private val assetManager: AssetManager) {
-        fun loadSettings(): List<IHUSettings> {
-            val settingsJson = assetManager.open("ihu_settings.json").bufferedReader().use { it.readText() }
+        fun loadSettings(path: String): List<IHUSettings> {
+            val settingsJson = assetManager.open(path).bufferedReader().use { it.readText() }
             return Gson().fromJson(settingsJson, Array<IHUSettings>::class.java).toList()
         }
     }
 
+    private fun generateDefaultFunctions(count: Int): List<IHUSettings> {
+        val settingsList = mutableListOf<IHUSettings>()
+        for (i in 0 until count) {
+            val setting = IHUSettings(
+                name = generateDefaultSettingName(i),
+                description = generateDefaultSettingName(i),
+                states = mapOf("0" to mapOf(i to 0), "1" to mapOf(i to 1))
+            )
+            settingsList.add(setting)
+        }
+        return settingsList
+    }
+
+    private fun generateDefaultSettingName(position: Int): String {
+        val div = position % 4
+        val pint = div + 1
+
+        var pbn = position / 4 + 1
+        if (pbn % 2 != 0) {
+            pbn += 1
+        } else {
+            pbn -= 1
+        }
+
+        return "${position.toString()} (Byte: ${pbn.toString()} Int: ${pint})"
+    }
+
+    private fun loadSettings(blocks: List<BlockTypes>, files: List<TypeSettings>): List<IHUCodesList> {
+        val codesList = mutableListOf<IHUCodesList>()
+        for (block in blocks) {
+            for (file in files.filter { it.block_type == block.name }) {
+                val settingsManagerIHU = IHUSettingsManager(resources.assets)
+                val settings = settingsManagerIHU.loadSettings(file.file_name)
+                val code = IHUCodesList(
+                    name = file.name,
+                    block_type = file.block_type,
+                    table = settings
+                )
+                codesList.add(code)
+            }
+            val defaultCodeSettings = generateDefaultFunctions(block.code_length*4)
+            val defaultCode = IHUCodesList(
+                name = "List of bits",
+                block_type = block.name,
+                table = defaultCodeSettings
+            )
+            codesList.add(defaultCode)
+        }
+        return codesList
+    }
+
+    private fun reloadTableValue() {
+        setSettingsIHU()
+    }
+
     // добавоение функций кодировки в интерфейс
-    private fun addIHUFunctions(conteiner: LinearLayout, IHUSettings: List<IHUSettings>) {
+    private fun addIHUFunctions(IHUSettings: List<IHUSettings>) {
+        IHUSettingsList = IHUSettings
+        val conteiner = findViewById<LinearLayout>(R.id.LinearLayoutFunctionsIHU)
+        conteiner.removeAllViews()
+        IHUSpinnerList = mutableListOf<Spinner>()
         for (setting in IHUSettings) {
             // Создание горизонтального объекта
             val horizontalLayout = LinearLayout(this)
@@ -406,7 +574,7 @@ class MainActivity : AppCompatActivity() {
             spinner.layoutParams = LinearLayout.LayoutParams(
                 0, // width = 0
                 LinearLayout.LayoutParams.WRAP_CONTENT,
-                1f // weight = 1f
+                1f, // weight = 1f
             )
 
             IHUSpinnerList.add(spinner)

@@ -43,6 +43,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:editable="true"
             android:ems="10"
@@ -50,13 +51,13 @@
             android:inputType="textMultiLine"
             app:layout_constraintEnd_toStartOf="@+id/clearIHUSourceCode"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ApplyDefaultButton" />
+            app:layout_constraintTop_toBottomOf="@+id/blockTypesSpiner" />
 
         <Button
             android:id="@+id/IHULoadingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:enabled="false"
             android:text="Reload Settings"
@@ -77,23 +78,46 @@
             android:id="@+id/IHUDEfaultCodesSpiner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
             android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/blockTypesSpiner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/blockTypesSpiner"
+            app:layout_constraintTop_toTopOf="@+id/blockTypesSpiner"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <Spinner
+            android:id="@+id/blockTypesSpiner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/textView"
-            app:layout_constraintEnd_toStartOf="@+id/ApplyDefaultButton"
             app:layout_constraintStart_toEndOf="@+id/textView"
             app:layout_constraintTop_toTopOf="@+id/textView" />
 
-        <Button
-            android:id="@+id/ApplyDefaultButton"
+        <Spinner
+            android:id="@+id/FuncTableSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Apply"
-            app:layout_constraintBottom_toBottomOf="@+id/IHUDEfaultCodesSpiner"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/IHUDEfaultCodesSpiner" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/IHULoadingButton"
+            app:layout_constraintHorizontal_bias="0.461"
+            app:layout_constraintStart_toEndOf="@+id/textView2"
+            app:layout_constraintTop_toTopOf="@+id/IHULoadingButton"
+            app:layout_constraintVertical_bias="0.375" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="FuncTable"
+            app:layout_constraintBottom_toBottomOf="@+id/FuncTableSpinner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/FuncTableSpinner" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ScrollView
+    <ScrollView style="@style/Base.Theme.DashingCodeEditor.ScrollViewStyle"
         android:id="@+id/scrollViewFunctionsIHU"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -101,7 +125,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:background="#FFFFFF"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
