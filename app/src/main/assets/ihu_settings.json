@@ -115,7 +115,7 @@
   },
   {
     "name": "RTCA",
-    "description": "Предупреждение при движении задним ходом",
+    "description": "Система предупреждения о риске боковых столкновений при движении задним ходом",
     "states": {
       "disable": {"24": 0},
       "enable": {"24": 1}
@@ -123,7 +123,7 @@
   },
   {
     "name": "WPC",
-    "description": "беспроводная зарядка мобильного телефона",
+    "description": "Беспроводная зарядка мобильного телефона",
     "states": {
       "disable": {"28": 0},
       "enable": {"28": 1}
@@ -157,7 +157,7 @@
   },
   {
     "name": "FWD",
-    "description": "Подсветка",
+    "description": "Атмосферная подсветка",
     "states": {
       "MORE": {"37": 0, "38": 1},
       "MORE_RUNNING": {"37": 1, "38": 1},
@@ -175,7 +175,7 @@
   },
   {
     "name": "BackingRadar",
-    "description": "BackingRadar",
+    "description": "Конфигурация парктроников",
     "states": {
       "F0R0": {"41": 0, "42": 0, "43": 0, "44": 0},
       "F0R2": {"41": 1, "42": 0, "43": 0, "44": 0},
@@ -191,7 +191,7 @@
   },
   {
     "name": "EngineType",
-    "description": "EngineType",
+    "description": "Тип ДВС",
     "states": {
       "15T":        {"52": 0, "53": 1, "54": 0, "55": 0},
       "15T_GUO_6":  {"52": 1, "53": 0, "54": 0, "55": 0},
@@ -233,7 +233,7 @@
   },
   {
     "name": "ACC/AEB",
-    "description": "Автономный ассистент торможения и круиз-контроля",
+    "description": "Ассистент автоматического торможения и адаптивного круиз-контроля",
     "states": {
       "disable": {"68": 0},
       "enable": {"68": 1}
@@ -249,7 +249,7 @@
   },
   {
     "name": "PowerType",
-    "description": "Электрический климат-контроль (гибрид)",
+    "description": "Тип энергетической установки",
     "states": {
       "48V": {"72": 1, "73": 1},
       "EV": {"72": 1, "73": 0},
@@ -307,7 +307,7 @@
   },
   {
     "name": "SteeringWheelType",
-    "description": "WheelType",
+    "description": "Тип рулевого колеса",
     "states": {
       "GENERATION": {"97": 0, "98": 0},
       "HAVEADAS": {"97": 0, "98": 1},
@@ -411,7 +411,7 @@
   },
   {
     "name": "WelcomeWaterLamp",
-    "description": "Фонарь приветствия в зеркале автомбиля",
+    "description": "Приветственная подсветка в зеркалах заднего вида",
     "states": {
       "disable": {"124": 0},
       "enable": {"124": 1}
@@ -445,7 +445,7 @@
     "name": "RegulateMainSeat",
     "description": "Регулировка водительского кресла",
     "states": {
-      "ELECTRI_8": {
+      "ELECTRIC_8": {
         "133": 1,
         "134": 0
       },
@@ -465,7 +465,7 @@
   },
   {
     "name": "CoPilotAdjustment",
-    "description": "Дополнительная настройка положения пассажирского кресла",
+    "description": "Регулировка пассажирского кресла",
     "states": {
       "RESERVED": {
         "136": 1,
@@ -475,7 +475,7 @@
         "136": 1,
         "137": 0
       },
-      "ELECTRI_4": {
+      "ELECTRIC_4": {
         "136": 0,
         "137": 0
       },
@@ -518,8 +518,8 @@
     }
   },
   {
-    "name": "SoundWeaves",
-    "description": "SoundWeaves",
+    "name": "SoundWaves",
+    "description": "SoundWaves",
     "states": {
       "disable": {"169": 0},
       "enable": {"169": 1}
@@ -687,7 +687,7 @@
   },
   {
     "name": "ADASType",
-    "description": "Система активной безопасности ADAS",
+    "description": "Тип активной безопасности и круиз контроля",
     "states": {
       "Cruise control": {
         "218": 1,
@@ -751,7 +751,7 @@
   },
   {
     "name": "FrontWiper",
-    "description": "Подогрев переднего стеклоочистителя (стекла)",
+    "description": "Подогрев лобового стекла",
     "states": {
       "disable": {"230": 0},
       "enable": {"230": 1}
