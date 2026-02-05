@@ -1,4 +1,2 @@
-/build
-/release
-app/build
-app/release
+build/
+release/
