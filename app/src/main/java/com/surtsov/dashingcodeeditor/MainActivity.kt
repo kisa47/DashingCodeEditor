@@ -93,20 +93,14 @@ class MainActivity : AppCompatActivity() {
         blockTypesSpiner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 setBlockType(position)
-
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-
         // получение объектов фронта
         val resultIHUCode = findViewById<EditText>(R.id.resultIHUCode)
-        val IHUBinarySwitch = findViewById<Switch>(R.id.IHUBinarySwitch)
 
         val settingsManagerIHU = IHUSettingsManager(resources.assets)
-
-
 
         // панель выбора кодировки
         val IHUDEfaultCodesSpiner = findViewById<Spinner>(R.id.IHUDEfaultCodesSpiner)
@@ -114,7 +108,6 @@ class MainActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 applyDefaultCode()
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
@@ -165,29 +158,25 @@ class MainActivity : AppCompatActivity() {
         // кнопка генерации кода
         val IHUGenerateButton = findViewById<Button>(R.id.ihuGenerateButton)
         IHUGenerateButton.setOnClickListener {
-            var newCode = generateCode()
-            if (!IHUBinarySwitch.isChecked)
-            {
-                val input = reverseIHUCode(IHUbinaryCode.toString())
-                val build = SpannableStringBuilder(input)
-                val original = IHUsourceCode.toString()
-                minOf(original.length, input.length).let { length ->
-                    for (i in 0 until length) {
-                        if (original[i] != input[i]) {
-                            // Подсвечиваем отличающийся символ другим цветом фона
-                            build.setSpan(
-                                BackgroundColorSpan(Color.RED),
-                                i,
-                                i + 1,
-                                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                        }
+        var newCode = generateCode()
+
+            val input = reverseIHUCode(IHUbinaryCode.toString())
+            val build = SpannableStringBuilder(input)
+            val original = IHUsourceCode.toString()
+            minOf(original.length, input.length).let { length ->
+                for (i in 0 until length) {
+                    if (original[i] != input[i]) {
+                        // Подсвечиваем отличающийся символ другим цветом фона
+                        build.setSpan(
+                            BackgroundColorSpan(Color.RED),
+                            i,
+                            i + 1,
+                            SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
                     }
                 }
-                resultIHUCode.setText(build)
-            } else {
-                resultIHUCode.setText(newCode)
             }
+            resultIHUCode.setText(build)
         }
 
         // Настройки инсетов экрана
@@ -215,6 +204,8 @@ class MainActivity : AppCompatActivity() {
         val configurations = IHUDefaultCodes.filter { it.block_type == "default" || it.block_type == blockType }.map { it.name }
         val configurations_adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, configurations)
 
+        val inputSourceIHUCode = findViewById<EditText>(R.id.inputSourceIHUCode)
+        inputSourceIHUCode.setText(null)
         configurations_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         IHUDEfaultCodesSpiner.adapter = configurations_adapter
         applyDefaultCode()
@@ -377,13 +368,13 @@ class MainActivity : AppCompatActivity() {
 
             if (it.toString().replace(" ", "").length != maxCount) {
                 inputSourceIHUCode.error =
-                    "Длина IHU-кода должна быть ровно 64 символа (пробелы игнорируются)"
+                    "Длина $selectedBlockType-кода должна быть ровно $maxCount символа (пробелы игнорируются)"
             }
             else if (!it.matches(Regex("^[a-fA-F0-9 ]*\$"))) {
-                inputSourceIHUCode.error = "IHU код должен состоять только из латинских букв a-f или A-F цифр и пробелов"
+                inputSourceIHUCode.error = "$selectedBlockType код должен состоять только из латинских букв a-f или A-F цифр и пробелов"
             }
             else if (onlyUpperCase && onlyLowerCase) {
-                inputSourceIHUCode.error = "IHU код не допускает смесь заглавных и строчных латинских букв!"
+                inputSourceIHUCode.error = "$selectedBlockType код не допускает смесь заглавных и строчных латинских букв!"
             }
             // если кодировка валидна, то работаем
             else {
