@@ -70,9 +70,9 @@
     "block_type": "IHU"
   },
   {
-    "name": "1.5 Prestige (ESP)",
+    "name": "1.5 Prestige (EPS)",
     "code": "6F 3F D8 F1 D3 ED 12 B3 03 40 50 20 02 08 58 07 00 48 04 81 13 58 A0 82 02 00 01 00 10 02 00 10",
-    "block_type": "ESP"
+    "block_type": "EPS"
   },
   {
     "name": "1.5 Elit (IHU)",
