@@ -765,6 +765,14 @@
     }
   },
   {
+    "name": "GLONASS",
+    "description": "Система позиционирования ГЛОНАСС",
+    "states": {
+      "disable": {"232": 0},
+      "enable": {"232": 1}
+    }
+  },
+  {
     "name": "HasScreenAnimation",
     "description": "HasScreenAnimation",
     "states": {
@@ -778,6 +786,14 @@
     "states": {
       "disable": {"237": 0},
       "enable": {"237": 1}
+    }
+  },
+  {
+    "name": "WasherWaterLevel",
+    "description": "Датчик уровня омывающей жидкости",
+    "states": {
+      "disable": {"250": 0},
+      "enable": {"250": 1}
     }
   }
 ]
